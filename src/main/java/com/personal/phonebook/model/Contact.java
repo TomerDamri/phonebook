@@ -1,6 +1,5 @@
 package com.personal.phonebook.model;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,4 +15,14 @@ public class Contact {
     private String lastName;
     private String phone;
     private String address;
+
+    public Contact (String firstName, String lastName, String phone, String address) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phone = phone;
+        this.address = address;
+    }
+
+    public Contact () {
+    }
 }
