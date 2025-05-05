@@ -42,6 +42,20 @@ public class ContactControllerIT {
     }
 
     @Test
+    public void testGetContactsWithInvalidPageSize () {
+        // Arrange
+        prepareSmallDataForTest();
+        String urlWithInvalidSize = String.format("%s?size=%d", baseUrl, 11);
+
+        // Act
+        ResponseEntity<String> response = restTemplate.getForEntity(urlWithInvalidSize, String.class);
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).contains("Page size cannot be larger than 10");
+    }
+
+    @Test
     public void testGetAllContactsWithoutQuery () {
         // Arrange
         prepareSmallDataForTest();
