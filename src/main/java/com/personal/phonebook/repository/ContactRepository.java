@@ -1,16 +1,21 @@
 package com.personal.phonebook.repository;
 
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 import com.personal.phonebook.model.Contact;
 
-public interface ContactRepository extends JpaRepository<Contact, Long> {
+public interface ContactRepository extends MongoRepository<Contact, String> {
 
-    @Query("SELECT c FROM Contact c WHERE " + "LOWER(c.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR "
-                + "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR " + "LOWER(c.phone) LIKE LOWER(CONCAT('%', :query, '%')) OR "
-                + "LOWER(c.address) LIKE LOWER(CONCAT('%', :query, '%'))")
-    Page<Contact> searchContacts (String query, Pageable pageable);
+    // Using regex for partial matching
+    @Query("{ $or: [ " +
+            "{ 'firstName': { $regex: ?0, $options: 'i' } }, " +
+            "{ 'lastName': { $regex: ?0, $options: 'i' } }, " +
+            "{ 'phone': { $regex: ?0, $options: 'i' } }, " +
+            "{ 'address': { $regex: ?0, $options: 'i' } } " +
+            "] }")
+    Page<Contact> searchContacts(String text, Pageable pageable);
 }

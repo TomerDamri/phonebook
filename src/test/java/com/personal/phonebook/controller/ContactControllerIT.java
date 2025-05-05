@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -16,8 +17,12 @@ import org.springframework.http.ResponseEntity;
 import com.personal.phonebook.model.Contact;
 import com.personal.phonebook.repository.ContactRepository;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+        "spring.data.mongodb.uri=mongodb://localhost:27017/contacts"})  //, "spring.main.allow-bean-definition-overriding=true"
 public class ContactControllerIT {
+
+    @Value("${spring.data.mongodb.uri}")
+    private String mongoUri;
 
     @LocalServerPort
     private int port;

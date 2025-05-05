@@ -1,22 +1,37 @@
 package com.personal.phonebook.model;
 
-import jakarta.persistence.*;
+import java.util.UUID;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.TextIndexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.TextScore;
+
 import lombok.Data;
 
 @Data
-@Entity
-@Table(name = "contacts")
+@Document(collection = "contacts")
 public class Contact {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
+    @TextIndexed
     private String firstName;
+
+    @TextIndexed
     private String lastName;
+
+    @TextIndexed
     private String phone;
+
+    @TextIndexed
     private String address;
 
+    @TextScore
+    private Float score;
+
     public Contact (String firstName, String lastName, String phone, String address) {
+        this.id = UUID.randomUUID().toString();
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
