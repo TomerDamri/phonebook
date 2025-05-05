@@ -130,7 +130,7 @@ public class ContactControllerIT {
     }
 
     private void prepareLargeDataForTests () {
-        for (char letter = 'a'; letter <= 'z'; letter++) {
+        for (char letter = 'z'; letter >= 'a'; letter--) {
             Contact contact = new Contact("Alice" + letter, "Smith", String.valueOf((int) letter), "Tel Aviv");
             contactRepository.save(contact);
         }
