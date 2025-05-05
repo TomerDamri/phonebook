@@ -79,10 +79,11 @@ public class ContactControllerIT {
     }
 
     private void validatePaginatedResults (int size) {
-        int totalContacts = 0;
+        int totalContactsForSearchTerm = 0;
+        int totalContactsForAll = 0;
         int page = 0;
-        char expectedLetter = 'a';
-
+        char expectedLetterForSearchTerm = 'a';
+        char expectedLetterForAll = 'a';
         while (true) {
             ResponseEntity<ContactsResponse> response = searchContacts("ali", page, size);
             assertSearchResponse(response, 26);
@@ -92,13 +93,25 @@ public class ContactControllerIT {
                 break;
             }
 
-            expectedLetter = validatePageResults(pageContacts, expectedLetter);
-            totalContacts += pageContacts.size();
+            expectedLetterForSearchTerm = validatePageResults(pageContacts, expectedLetterForSearchTerm);
+
+            // verify pagination when no searchTerm is provided
+            ResponseEntity<ContactsResponse> responseForAll = getContacts(page, size);
+            // Assert
+            assertSearchResponse(responseForAll, 26);
+            ContactsResponse body = responseForAll.getBody();
+            assertThat(body).isNotNull();
+            expectedLetterForAll = validatePageResults(body.getContacts(), expectedLetterForAll);
+
+            totalContactsForSearchTerm += pageContacts.size();
+            totalContactsForAll += body.getContacts().size();
             page++;
         }
 
-        assertThat(totalContacts).isEqualTo(26);
-        assertThat(expectedLetter).isEqualTo('{'); // Verify we've seen all letters
+        assertThat(totalContactsForSearchTerm).isEqualTo(26);
+        assertThat(totalContactsForAll).isEqualTo(26);
+        assertThat(expectedLetterForSearchTerm).isEqualTo('{');
+        assertThat(expectedLetterForAll).isEqualTo('{');// Verify we've seen all letters
     }
 
     private char validatePageResults (List<Contact> pageContacts, char expectedLetter) {
@@ -112,6 +125,11 @@ public class ContactControllerIT {
 
     private ResponseEntity<ContactsResponse> getContacts () {
         return restTemplate.getForEntity(baseUrl, ContactsResponse.class);
+    }
+
+    private ResponseEntity<ContactsResponse> getContacts (int page, int size) {
+        String urlWithQuery = String.format("%s?page=%d&size=%d", baseUrl, page, size);
+        return restTemplate.getForEntity(urlWithQuery, ContactsResponse.class);
     }
 
     private ResponseEntity<ContactsResponse> searchContacts (String query, int page, int size) {
