@@ -8,6 +8,8 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -21,7 +23,7 @@ public class ContactControllerIT extends BaseIntegrationTest {
     @Override
     @BeforeEach
     public void setup () {
-        baseUrl = "http://localhost:" + port + "/contacts";
+        baseUrl = "http://localhost:" + port + "/phonebook";
         contactRepository.deleteAll();
     }
 
@@ -29,7 +31,7 @@ public class ContactControllerIT extends BaseIntegrationTest {
     public void getContacts_WithInvalidPageSize_ReturnsBadRequest () {
         // Given
         prepareSmallDataForTest();
-        String urlWithInvalidSize = String.format("%s?size=%d", baseUrl, 11);
+        String urlWithInvalidSize = String.format("%s/contacts?size=%d", baseUrl, 11);
 
         // When
         ResponseEntity<String> response = restTemplate.getForEntity(urlWithInvalidSize, String.class);
@@ -48,6 +50,7 @@ public class ContactControllerIT extends BaseIntegrationTest {
         ResponseEntity<ContactsResponse> response = getContacts();
 
         // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         ContactsResponse body = response.getBody();
         assertThat(body).isNotNull();
         assertThat(body.getContacts().size()).isEqualTo(3);
@@ -102,6 +105,87 @@ public class ContactControllerIT extends BaseIntegrationTest {
         assertEquals("Bibby", actualContacts.get(2).getLastName());
     }
 
+    @Test
+    public void createContact_WithValidData_ReturnsCreatedContact () {
+        // Given
+        Contact newContact = new Contact("Test", "User", "123-456-7890", "Test Address");
+        // When
+        ResponseEntity<Contact> response = restTemplate.postForEntity(baseUrl, newContact, Contact.class);
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getId()).isNotNull();
+        assertThat(response.getBody().getFirstName()).isEqualTo("Test");
+
+        // Verify it's in the database
+        Contact saved = contactRepository.findById(response.getBody().getId()).orElse(null);
+        assertThat(saved).isNotNull();
+        assertThat(saved.getFirstName()).isEqualTo("Test");
+    }
+
+    @Test
+    public void createContact_WithInvalidData_ReturnsBadRequest () {
+        // Given
+        Contact invalidContact = new Contact("", "", "", "");
+        // When
+        ResponseEntity<String> response = restTemplate.postForEntity(baseUrl, invalidContact, String.class);
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void updateContact_WithValidData_ReturnsUpdatedContact () {
+        // Given
+        Contact initial = contactRepository.save(new Contact("Initial", "User", "111-111-1111", "Initial Address"));
+        Contact updated = new Contact("Updated", "User", "222-222-2222", "Updated Address");
+        // When
+        ResponseEntity<Contact> response = restTemplate.exchange(baseUrl + "/" + initial.getId(),
+                                                                 HttpMethod.PUT,
+                                                                 new HttpEntity<>(updated),
+                                                                 Contact.class);
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getFirstName()).isEqualTo("Updated");
+
+        // Verify it's updated in the database
+        Contact savedContact = contactRepository.findById(initial.getId()).orElse(null);
+        assertThat(savedContact).isNotNull();
+        assertThat(savedContact.getFirstName()).isEqualTo("Updated");
+    }
+
+    @Test
+    public void updateContact_WithNonExistingId_ReturnsNotFound () {
+        // Given
+        Contact updated = new Contact("Updated", "User", "222-222-2222", "Updated Address");
+        // When
+        ResponseEntity<String> response = restTemplate.exchange(baseUrl + "/non-existing-id",
+                                                                HttpMethod.PUT,
+                                                                new HttpEntity<>(updated),
+                                                                String.class);
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void deleteContact_WithExistingId_ReturnsNoContent () {
+        // Given
+        Contact contact = contactRepository.save(new Contact("ToDelete", "User", "111-111-1111", "Delete Address"));
+        // When
+        ResponseEntity<Void> response = restTemplate.exchange(baseUrl + "/" + contact.getId(), HttpMethod.DELETE, null, Void.class);
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(contactRepository.findById(contact.getId())).isEmpty();
+    }
+
+    @Test
+    public void deleteContact_WithNonExistingId_ReturnsNotFound () {
+        // When
+        ResponseEntity<String> response = restTemplate.exchange(baseUrl + "/non-existing-id", HttpMethod.DELETE, null, String.class);
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
     private void validatePaginatedResults (int size) {
         int totalContactsForSearchTerm = 0;
         int totalContactsForAll = 0;
@@ -148,16 +232,16 @@ public class ContactControllerIT extends BaseIntegrationTest {
     }
 
     private ResponseEntity<ContactsResponse> getContacts () {
-        return restTemplate.getForEntity(baseUrl, ContactsResponse.class);
+        return restTemplate.getForEntity(String.format("%s/contacts", baseUrl), ContactsResponse.class);
     }
 
     private ResponseEntity<ContactsResponse> getContacts (int page, int size) {
-        String urlWithQuery = String.format("%s?page=%d&size=%d", baseUrl, page, size);
+        String urlWithQuery = String.format("%s/contacts?page=%d&size=%d", baseUrl, page, size);
         return restTemplate.getForEntity(urlWithQuery, ContactsResponse.class);
     }
 
     private ResponseEntity<ContactsResponse> searchContacts (String query, int page, int size) {
-        String urlWithQuery = String.format("%s?query=%s&page=%d&size=%d", baseUrl, query, page, size);
+        String urlWithQuery = String.format("%s/contacts?query=%s&page=%d&size=%d", baseUrl, query, page, size);
         return restTemplate.getForEntity(urlWithQuery, ContactsResponse.class);
     }
 

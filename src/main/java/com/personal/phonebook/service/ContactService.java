@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.personal.phonebook.controller.response.ContactsResponse;
 import com.personal.phonebook.exception.ContanctNotFoundException;
@@ -36,6 +37,7 @@ public class ContactService {
     }
 
     public Contact createContact (Contact contact) {
+        validateContact(contact);
         log.debug("Creating new contact: {}", contact);
         Contact savedContact = contactRepository.save(contact);
         log.debug("Contact created successfully with id: {}", savedContact.getId());
@@ -43,6 +45,7 @@ public class ContactService {
     }
 
     public Contact updateContact (String id, Contact contactDetails) {
+        validateContact(contactDetails);
         log.debug("Attempting to update contact with id: {}", id);
         Contact existingContact = requireById(id);
         existingContact.setFirstName(contactDetails.getFirstName());
@@ -62,6 +65,18 @@ public class ContactService {
         }
         else {
             throw new ContanctNotFoundException(id);
+        }
+    }
+
+    private void validateContact (Contact contact) {
+        if (contact == null) {
+            throw new IllegalArgumentException("Contact cannot be null");
+        }
+        if (!StringUtils.hasText(contact.getFirstName())) {
+            throw new IllegalArgumentException("First name is mandatory");
+        }
+        if (!StringUtils.hasText(contact.getPhone())) {
+            throw new IllegalArgumentException("Phone number is mandatory");
         }
     }
 

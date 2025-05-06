@@ -91,10 +91,10 @@ POST /api/contacts
 Request body:
 ```json
 {
-  "firstName": "John",
-  "lastName": "Doe",
-  "phone": "123-456-7890",
-  "address": "123 Main St, City, Country"
+  "firstName": "John",        // mandatory
+  "lastName": "Doe",         // optional
+  "phone": "123-456-7890",  // mandatory
+  "address": "123 Main St"   // optional
 }
 ```
 
@@ -105,10 +105,10 @@ PUT /api/contacts/{id}
 Request body:
 ```json
 {
-  "firstName": "John",
-  "lastName": "Doe",
-  "phone": "123-456-7890",
-  "address": "123 Main St, City, Country"
+  "firstName": "John",        // mandatory
+  "lastName": "Doe",         // optional
+  "phone": "123-456-7890",  // mandatory
+  "address": "updated adress"   // optional
 }
 ```
 

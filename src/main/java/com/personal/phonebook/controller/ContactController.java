@@ -10,6 +10,7 @@ import com.personal.phonebook.model.Contact;
 import com.personal.phonebook.service.ContactService;
 
 @RestController
+@RequestMapping("/phonebook")
 public class ContactController {
 
     @Autowired
