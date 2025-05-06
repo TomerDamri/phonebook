@@ -7,14 +7,14 @@ services:
     volumes:
       - mongodb_data:/data/db
 
-  app:
-    build: .
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mongodb
-    environment:
-      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/contacts
+#  app:
+#    build: .
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - mongodb
+#    environment:
+#      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/contacts
 
 volumes:
   mongodb_data:

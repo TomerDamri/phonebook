@@ -1,9 +1,11 @@
 package com.personal.phonebook.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +92,33 @@ public class ContactControllerIT {
 
         // Act & Assert
         validatePaginatedResults(size);
+    }
+
+    @Test
+    void testSearchContactsAcrossFields () {
+        // Arrange
+        List<Contact> testContacts = List.of(new Contact("Bobby", "Smith", "123-456", "Main St"), // matches firstName
+                                             new Contact("John", "Bibby", "123-456", "Oak St"), // matches lastName
+                                             new Contact("Alice", "Jones", "123-456", "Bobbit Ave"), // matches address
+                                             new Contact("Mike", "Wilson", "123-456", "Pine St"), // no match
+                                             new Contact("Sarah", "Davis", "123-456", "Elm St"), // no match
+                                             new Contact("Tom", "Brown", "123-456", "Cedar St"), // no match
+                                             new Contact("Emma", "Taylor", "123-456", "Maple St"), // no match
+                                             new Contact("James", "Miller", "123-456", "Birch St"), // no match
+                                             new Contact("Lucy", "Moore", "123-456", "Spruce St"), // no match
+                                             new Contact("David", "Clark", "123-456", "Willow St") // no match
+        );
+        contactRepository.saveAll(testContacts);
+        // Act
+        ResponseEntity<ContactsResponse> response = searchContacts("bb", 0, 10);
+        // Assert
+        assertSearchResponse(response, 3);
+        List<Contact> actualContacts = response.getBody().getContacts();
+
+        assertEquals(3, actualContacts.size());
+        Assertions.assertTrue(actualContacts.get(0).getAddress().contains("Bobbit"));
+        assertEquals("Bobby", actualContacts.get(1).getFirstName());
+        assertEquals("Bibby", actualContacts.get(2).getLastName());
     }
 
     private void validatePaginatedResults (int size) {
