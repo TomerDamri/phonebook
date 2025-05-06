@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -22,9 +21,6 @@ import com.personal.phonebook.repository.ContactRepository;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.data.mongodb.uri=mongodb://localhost:27017/contacts")
 public class ContactControllerIT {
-
-    @Value("${spring.data.mongodb.uri}")
-    private String mongoUri;
 
     @LocalServerPort
     private int port;
@@ -44,59 +40,58 @@ public class ContactControllerIT {
     }
 
     @Test
-    public void testGetContactsWithInvalidPageSize () {
-        // Arrange
+    public void getContacts_WithInvalidPageSize_ReturnsBadRequest () {
+        // Given
         prepareSmallDataForTest();
         String urlWithInvalidSize = String.format("%s?size=%d", baseUrl, 11);
 
-        // Act
+        // When
         ResponseEntity<String> response = restTemplate.getForEntity(urlWithInvalidSize, String.class);
 
-        // Assert
+        // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).contains("Page size cannot be larger than 10");
     }
 
     @Test
-    public void testGetAllContactsWithoutQuery () {
-        // Arrange
+    public void getContacts_WithoutQuery_ReturnsAllContacts () {
+        // Given
         prepareSmallDataForTest();
 
-        // Act
+        // When
         ResponseEntity<ContactsResponse> response = getContacts();
 
-        // Assert
+        // Then
         ContactsResponse body = response.getBody();
         assertThat(body).isNotNull();
         assertThat(body.getContacts().size()).isEqualTo(3);
     }
 
     @Test
-    public void testSearchContactsByQueryWithPaging () {
-        // Arrange
+    public void searchContacts_WithQuery_ReturnsPaginatedResult () {
+        // Given
         prepareSmallDataForTest();
 
-        // Act
+        // When
         ResponseEntity<ContactsResponse> response = searchContacts("ali", 0, 10);
 
-        // Assert
+        // Then
         assertSearchResponse(response, 1);
         assertContact(response.getBody().getContacts().get(0), "Alice");
     }
 
     @Test
-    public void testSearchContactsByQueryWithPagingWithMultipleAnswers () {
-        // Arrange
+    public void searchContacts_WithQuery_ReturnsPaginatedResultsWithMultiplePages () {
+        // Given
         prepareLargeDataForTests();
         int size = 10;
-
-        // Act & Assert
+        // When & Then
         validatePaginatedResults(size);
     }
 
     @Test
-    void testSearchContactsAcrossFields () {
-        // Arrange
+    void searchContacts_AcrossAllFields_ReturnsMatchingContacts () {
+        // Given
         List<Contact> testContacts = List.of(new Contact("Bobby", "Smith", "123-456", "Main St"), // matches firstName
                                              new Contact("John", "Bibby", "123-456", "Oak St"), // matches lastName
                                              new Contact("Alice", "Jones", "123-456", "Bobbit Ave"), // matches address
@@ -109,9 +104,9 @@ public class ContactControllerIT {
                                              new Contact("David", "Clark", "123-456", "Willow St") // no match
         );
         contactRepository.saveAll(testContacts);
-        // Act
+        // When
         ResponseEntity<ContactsResponse> response = searchContacts("bb", 0, 10);
-        // Assert
+        // Then
         assertSearchResponse(response, 3);
         List<Contact> actualContacts = response.getBody().getContacts();
 
@@ -140,7 +135,7 @@ public class ContactControllerIT {
 
             // verify pagination when no searchTerm is provided
             ResponseEntity<ContactsResponse> responseForAll = getContacts(page, size);
-            // Assert
+            // Then
             assertSearchResponse(responseForAll, 26);
             ContactsResponse body = responseForAll.getBody();
             assertThat(body).isNotNull();

@@ -39,19 +39,17 @@ class ContactServiceTest {
     void setUp () {
         testContact = new Contact("John", "Doe", "123-456-7890", "123 Main St");
         testContact.setId("test-id-123");
-
         contactPage = new PageImpl<>(List.of(testContact));
-
-        // Set maxPageSize using reflection
         ReflectionTestUtils.setField(contactService, "maxPageSize", 10);
     }
 
     @Test
-    void searchContactsWithQueryTest () {
+    void searchContacts_WithQuery_ReturnsMatchingContacts () {
+        // Given
         when(contactRepository.searchContacts(eq("John"), any(PageRequest.class))).thenReturn(contactPage);
-
+        // When
         ContactsResponse response = contactService.searchContacts("John", 0, 5);
-
+        // Then
         assertEquals(1, response.getContacts().size());
         assertEquals(1, response.getTotalCount());
         assertEquals("John", response.getContacts().get(0).getFirstName());
@@ -59,39 +57,41 @@ class ContactServiceTest {
     }
 
     @Test
-    void searchContactsWithoutQueryTest () {
+    void searchContacts_WithoutQuery_ReturnsAllContacts () {
+        // Given
         when(contactRepository.findAll(any(PageRequest.class))).thenReturn(contactPage);
-
+        // When
         ContactsResponse response = contactService.searchContacts(null, 0, 5);
-
+        // Then
         assertEquals(1, response.getContacts().size());
         assertEquals(1, response.getTotalCount());
         verify(contactRepository).findAll(any(PageRequest.class));
     }
 
     @Test
-    void searchContactsWithInvalidPageSize () {
+    void searchContacts_WithInvalidPageSize_ThrowsException () {
+        // When + Then
         IllegalArgumentException actualException = assertThrows(IllegalArgumentException.class, () -> {
             contactService.searchContacts(null, 0, 20);
         });
-
         assertTrue(actualException.getMessage().contains("Page size cannot be larger than 10"));
     }
 
     @Test
-    void createContactTest () {
+    void createContact_ReturnsCreatedContact () {
+        // Given
         when(contactRepository.save(any(Contact.class))).thenReturn(testContact);
-
+        // When
         Contact result = contactService.createContact(testContact);
-
+        // Then
         assertEquals("John", result.getFirstName());
         assertEquals("test-id-123", result.getId());
     }
 
     @Test
-    void updateContactTest () {
+    void updateContact_WithExistingId_ReturnsUpdatedContact () {
+        // Given
         Contact updatedContact = new Contact("Jane", "Doe", "987-654-3210", "456 New St");
-
         when(contactRepository.findById("test-id-123")).thenReturn(Optional.of(testContact));
         when(contactRepository.save(any(Contact.class))).thenAnswer(invocation -> {
             Contact savedContact = invocation.getArgument(0);
@@ -99,32 +99,38 @@ class ContactServiceTest {
             assertEquals("test-id-123", savedContact.getId());
             return savedContact;
         });
-
+        // When
         Contact result = contactService.updateContact("test-id-123", updatedContact);
-
+        // Then
         assertEquals("Jane", result.getFirstName());
     }
 
     @Test
-    void updateNonExistentContactTest () {
+    void updateContact_WithNonExistingId_ThrowsNotFoundException () {
+        // When
         when(contactRepository.findById("nonexistent-id")).thenReturn(Optional.empty());
-
+        // Then
         ContanctNotFoundException actualException = assertThrows(ContanctNotFoundException.class,
                                                                  () -> contactService.updateContact("nonexistent-id", testContact));
         assertEquals("Contact with id nonexistent-id not found", actualException.getMessage());
     }
 
     @Test
-    void deleteContactTest () {
+    void deleteContact_WithExistingId_DeletesContact () {
+        // Given
         when(contactRepository.existsById("test-id-123")).thenReturn(true);
         doNothing().when(contactRepository).deleteById("test-id-123");
+        // When
         contactService.deleteContact("test-id-123");
+        // Then
         verify(contactRepository).deleteById("test-id-123");
     }
 
     @Test
-    void deleteNonExistentContactTest () {
+    void deleteContact_WithNonExistingId_ThrowsNotFoundException () {
+        // Given
         when(contactRepository.existsById("nonexistent-id")).thenReturn(false);
+        // When + Then
         ContanctNotFoundException actualException = assertThrows(ContanctNotFoundException.class,
                                                                  () -> contactService.deleteContact("nonexistent-id"));
         assertEquals("Contact with id nonexistent-id not found", actualException.getMessage());
