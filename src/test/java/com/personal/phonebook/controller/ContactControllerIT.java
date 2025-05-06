@@ -106,6 +106,30 @@ public class ContactControllerIT extends BaseIntegrationTest {
     }
 
     @Test
+    public void searchContacts_WithQueryIth_ReturnsMatchingContact () {
+        // Given
+        Contact contact = new Contact("John", "Smith", "123-456-7890", "123 Main St");
+        ResponseEntity<Contact> createResponse = restTemplate.postForEntity(baseUrl, contact, Contact.class);
+        assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        // When
+        ResponseEntity<ContactsResponse> searchResponse = searchContacts("ith", 0, 10);
+
+        // Then
+        assertThat(searchResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        ContactsResponse body = searchResponse.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.getTotalCount()).isEqualTo(1);
+        assertThat(body.getContacts()).hasSize(1);
+
+        Contact foundContact = body.getContacts().get(0);
+        assertThat(foundContact.getFirstName()).isEqualTo("John");
+        assertThat(foundContact.getLastName()).isEqualTo("Smith");
+        assertThat(foundContact.getPhone()).isEqualTo("123-456-7890");
+        assertThat(foundContact.getAddress()).isEqualTo("123 Main St");
+    }
+
+    @Test
     public void createContact_WithValidData_ReturnsCreatedContact () {
         // Given
         Contact newContact = new Contact("Test", "User", "123-456-7890", "Test Address");
