@@ -2,40 +2,15 @@ package com.personal.phonebook.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
 
+import com.personal.phonebook.BaseIntegrationTest;
 import com.personal.phonebook.model.Contact;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.data.mongodb.uri=mongodb://localhost:27017/contacts")
-public class ContactRepositoryIT {
-
-    @Autowired
-    private ContactRepository contactRepository;
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
-
-    @BeforeEach
-    public void setup () {
-        contactRepository.save(new Contact("John", "Doe", "123-456-7890", "123 Main St"));
-        contactRepository.save(new Contact("Jane", "Smith", "456-789-0123", "456 Oak Ave"));
-        contactRepository.save(new Contact("Bob", "Johnson", "789-012-3456", "789 Pine Rd"));
-        contactRepository.save(new Contact("Alice", "Williams", "012-345-6789", "012 Elm Blvd"));
-        contactRepository.save(new Contact("Charlie", "Brown", "345-678-9012", "345 Maple Ln"));
-    }
-
-    @AfterEach
-    public void cleanup () {
-        contactRepository.deleteAll();
-    }
+public class ContactRepositoryIT extends BaseIntegrationTest {
 
     @Test
     public void findAll_ReturnsAllContacts () {

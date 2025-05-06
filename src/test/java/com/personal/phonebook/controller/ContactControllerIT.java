@@ -8,31 +8,17 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.personal.phonebook.BaseIntegrationTest;
 import com.personal.phonebook.controller.response.ContactsResponse;
 import com.personal.phonebook.model.Contact;
-import com.personal.phonebook.repository.ContactRepository;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.data.mongodb.uri=mongodb://localhost:27017/contacts")
-public class ContactControllerIT {
-
-    @LocalServerPort
-    private int port;
-
-    @Autowired
-    private TestRestTemplate restTemplate;
-
-    @Autowired
-    private ContactRepository contactRepository;
-
+public class ContactControllerIT extends BaseIntegrationTest {
     private String baseUrl;
 
+    @Override
     @BeforeEach
     public void setup () {
         baseUrl = "http://localhost:" + port + "/contacts";

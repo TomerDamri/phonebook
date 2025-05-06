@@ -3,42 +3,14 @@ package com.personal.phonebook.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
+import com.personal.phonebook.BaseIntegrationTest;
 import com.personal.phonebook.controller.response.ContactsResponse;
 import com.personal.phonebook.exception.ContanctNotFoundException;
 import com.personal.phonebook.model.Contact;
-import com.personal.phonebook.repository.ContactRepository;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.data.mongodb.uri=mongodb://localhost:27017/contacts")
-public class ContactServiceIT {
-
-    @Autowired
-    private ContactService contactService;
-
-    @Autowired
-    private ContactRepository contactRepository;
-
-    private String testContactId;
-
-    @BeforeEach
-    public void setup () {
-        // Create test data
-        testContactId = contactRepository.save(new Contact("John", "Doe", "123-456-7890", "123 Main St")).getId();
-        contactRepository.save(new Contact("Jane", "Smith", "456-789-0123", "456 Oak Ave"));
-        contactRepository.save(new Contact("Bob", "Johnson", "789-012-3456", "789 Pine Rd"));
-        contactRepository.save(new Contact("Alice", "Williams", "012-345-6789", "012 Elm Blvd"));
-        contactRepository.save(new Contact("Charlie", "Brown", "345-678-9012", "345 Maple Ln"));
-    }
-
-    @AfterEach
-    public void cleanup () {
-        contactRepository.deleteAll();
-    }
+public class ContactServiceIT extends BaseIntegrationTest {
 
     @Test
     public void searchContacts_WithEmptyQuery_ReturnsAllContacts () {
