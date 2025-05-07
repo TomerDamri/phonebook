@@ -36,7 +36,7 @@ class ContactServiceTest {
     private Page<Contact> contactPage;
 
     @BeforeEach
-    void setUp () {
+    public void setUp () {
         testContact = new Contact("John", "Doe", "123-456-7890", "123 Main St");
         testContact.setId("test-id-123");
         contactPage = new PageImpl<>(List.of(testContact));
@@ -44,7 +44,7 @@ class ContactServiceTest {
     }
 
     @Test
-    void searchContacts_WithQuery_ReturnsMatchingContacts () {
+    public void searchContacts_WithQuery_ReturnsMatchingContacts () {
         // Given
         when(contactRepository.searchContacts(eq("John"), any(PageRequest.class))).thenReturn(contactPage);
         // When
@@ -57,7 +57,7 @@ class ContactServiceTest {
     }
 
     @Test
-    void searchContacts_WithoutQuery_ReturnsAllContacts () {
+    public void searchContacts_WithoutQuery_ReturnsAllContacts () {
         // Given
         when(contactRepository.findAll(any(PageRequest.class))).thenReturn(contactPage);
         // When
@@ -69,7 +69,7 @@ class ContactServiceTest {
     }
 
     @Test
-    void searchContacts_WithInvalidPageSize_ThrowsException () {
+    public void searchContacts_WithInvalidPageSize_ThrowsException () {
         // When + Then
         IllegalArgumentException actualException = assertThrows(IllegalArgumentException.class, () -> {
             contactService.searchContacts(null, 0, 20, "ASC", "firstName");
@@ -78,7 +78,7 @@ class ContactServiceTest {
     }
 
     @Test
-    void createContact_ReturnsCreatedContact () {
+    public void createContact_ReturnsCreatedContact () {
         // Given
         when(contactRepository.save(any(Contact.class))).thenReturn(testContact);
         // When
@@ -89,7 +89,7 @@ class ContactServiceTest {
     }
 
     @Test
-    void updateContact_WithExistingId_ReturnsUpdatedContact () {
+    public void updateContact_WithExistingId_ReturnsUpdatedContact () {
         // Given
         Contact updatedContact = new Contact("Jane", "Doe", "987-654-3210", "456 New St");
         when(contactRepository.findById("test-id-123")).thenReturn(Optional.of(testContact));
@@ -106,7 +106,7 @@ class ContactServiceTest {
     }
 
     @Test
-    void updateContact_WithNonExistingId_ThrowsNotFoundException () {
+    public void updateContact_WithNonExistingId_ThrowsNotFoundException () {
         // When
         when(contactRepository.findById("nonexistent-id")).thenReturn(Optional.empty());
         // Then
@@ -116,7 +116,7 @@ class ContactServiceTest {
     }
 
     @Test
-    void deleteContact_WithExistingId_DeletesContact () {
+    public void deleteContact_WithExistingId_DeletesContact () {
         // Given
         when(contactRepository.existsById("test-id-123")).thenReturn(true);
         doNothing().when(contactRepository).deleteById("test-id-123");
@@ -127,7 +127,7 @@ class ContactServiceTest {
     }
 
     @Test
-    void deleteContact_WithNonExistingId_ThrowsNotFoundException () {
+    public void deleteContact_WithNonExistingId_ThrowsNotFoundException () {
         // Given
         when(contactRepository.existsById("nonexistent-id")).thenReturn(false);
         // When + Then

@@ -39,7 +39,7 @@ public abstract class BaseIntegrationTest {
     }
 
     @AfterEach
-    public void cleanup () {
+    protected void cleanup () {
         contactRepository.deleteAll();
     }
 }

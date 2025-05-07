@@ -32,13 +32,13 @@ public class ContactService {
     private ContactRepository contactRepository;
 
     public ContactsResponse searchContacts (String query, int page, int size, String direction, String sortBy) {
-        validatePageSize(size);
-        validateSortField(sortBy);
-        Sort sort = createSort(direction, sortBy);
+        validateSearchContactInput(size, direction, sortBy);
+        Sort sort = Sort.by(Sort.Direction.valueOf(direction.toUpperCase()), sortBy);
 
         if (query == null || query.isEmpty()) {
             return getContacts(page, size, sort);
         }
+        log.debug("Searching contacts with query: {}, page: {}, size: {}, direction: {}, sortBy: {}", query, page, size, direction, sortBy);
         Page<Contact> result = contactRepository.searchContacts(query, PageRequest.of(page, size, sort));
         return new ContactsResponse(result.getContent(), result.getTotalElements());
     }
@@ -75,6 +75,12 @@ public class ContactService {
         }
     }
 
+    private ContactsResponse getContacts (int page, int size, Sort sort) {
+        log.debug("Fetching contacts with page: {}, size: {}, sort: {}", page, size, sort);
+        Page<Contact> result = contactRepository.findAll(PageRequest.of(page, size, sort));
+        return new ContactsResponse(result.getContent(), result.getTotalElements());
+    }
+
     private void validateContact (Contact contact) {
         if (contact == null) {
             throw new IllegalArgumentException("Contact cannot be null");
@@ -91,31 +97,29 @@ public class ContactService {
         return contactRepository.findById(id).orElseThrow( () -> new ContanctNotFoundException(id));
     }
 
+    private void validateSearchContactInput (int size, String direction, String sortBy) {
+        validatePageSize(size);
+        validateSortField(sortBy);
+        validateSortDirection(direction);
+    }
+
     private void validatePageSize (int size) {
         if (size > maxPageSize) {
             throw new IllegalArgumentException("Page size cannot be larger than " + maxPageSize);
         }
     }
 
-    private Sort createSort (String direction, String sortBy) {
-        Sort.Direction sortDirection;
-        try {
-            sortDirection = Sort.Direction.valueOf(direction.toUpperCase());
-        }
-        catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(String.format("Invalid sort direction '%s'. Allowed values are: ASC, DESC", direction));
-        }
-        return Sort.by(sortDirection, sortBy);
-    }
-
     private void validateSortField (String sortBy) {
         if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
-            throw new IllegalArgumentException("Invalid sort field. Allowed fields are: " + String.join(", ", ALLOWED_SORT_FIELDS));
+            throw new IllegalArgumentException(String.format("Invalid sort field. Allowed fields are: %s", ALLOWED_SORT_FIELDS));
         }
     }
 
-    private ContactsResponse getContacts (int page, int size, Sort sort) {
-        Page<Contact> result = contactRepository.findAll(PageRequest.of(page, size, sort));
-        return new ContactsResponse(result.getContent(), result.getTotalElements());
+    private void validateSortDirection (String direction) {
+        if (!ALLOWED_SORT_DIRECTION.contains(direction.toUpperCase())) {
+            throw new IllegalArgumentException(String.format("Invalid sort direction '%s'. Allowed values are: %s",
+                                                             direction,
+                                                             ALLOWED_SORT_DIRECTION));
+        }
     }
 }
