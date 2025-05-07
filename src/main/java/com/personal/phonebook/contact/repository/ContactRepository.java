@@ -1,11 +1,11 @@
-package com.personal.phonebook.repository;
+package com.personal.phonebook.contact.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
-import com.personal.phonebook.model.Contact;
+import com.personal.phonebook.contact.model.Contact;
 
 public interface ContactRepository extends MongoRepository<Contact, String> {
 

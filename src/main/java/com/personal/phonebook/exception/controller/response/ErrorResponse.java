@@ -1,4 +1,4 @@
-package com.personal.phonebook.controller.response;
+package com.personal.phonebook.exception.controller.response;
 
 import java.time.LocalDateTime;
 

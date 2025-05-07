@@ -6,9 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
 import com.personal.phonebook.BaseIntegrationTest;
-import com.personal.phonebook.controller.response.ContactsResponse;
+import com.personal.phonebook.contact.controller.response.ContactsResponse;
+import com.personal.phonebook.contact.model.Contact;
 import com.personal.phonebook.exception.ContanctNotFoundException;
-import com.personal.phonebook.model.Contact;
+
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 
 public class ContactServiceIT extends BaseIntegrationTest {
 
@@ -21,6 +24,8 @@ public class ContactServiceIT extends BaseIntegrationTest {
         assertThat(result).isNotNull();
         assertThat(result.getContacts()).hasSize(5);
         assertThat(result.getTotalCount()).isEqualTo(5);
+        assertMetricIncremented("phonebook.contacts.search");
+        assertTimerMetricRecorded("search_contacts_timer");
     }
 
     @Test
@@ -32,6 +37,8 @@ public class ContactServiceIT extends BaseIntegrationTest {
         assertThat(result).isNotNull();
         assertThat(result.getContacts()).hasSize(5);
         assertThat(result.getTotalCount()).isEqualTo(5);
+        assertMetricIncremented("phonebook.contacts.search");
+        assertTimerMetricRecorded("search_contacts_timer");
     }
 
     @Test
@@ -43,6 +50,8 @@ public class ContactServiceIT extends BaseIntegrationTest {
         assertThat(result).isNotNull();
         assertThat(result.getContacts()).hasSize(1);
         assertThat(result.getContacts().get(0).getFirstName()).isEqualTo("Alice");
+        assertMetricIncremented("phonebook.contacts.search");
+        assertTimerMetricRecorded("search_contacts_timer");
     }
 
     @Test
@@ -54,6 +63,8 @@ public class ContactServiceIT extends BaseIntegrationTest {
         assertThat(result).isNotNull();
         assertThat(result.getContacts()).hasSize(2); // Should match "John" and "Johnson"
         assertThat(result.getContacts()).extracting(Contact::getLastName).containsAnyOf("Doe", "Johnson");
+        assertMetricIncremented("phonebook.contacts.search");
+        assertTimerMetricRecorded("search_contacts_timer");
     }
 
     @Test
@@ -65,6 +76,8 @@ public class ContactServiceIT extends BaseIntegrationTest {
         assertThat(result).isNotNull();
         assertThat(result.getContacts()).hasSize(1);
         assertThat(result.getContacts().get(0).getPhone()).isEqualTo("123-456-7890");
+        assertMetricIncremented("phonebook.contacts.search");
+        assertTimerMetricRecorded("search_contacts_timer");
     }
 
     @Test
@@ -76,6 +89,8 @@ public class ContactServiceIT extends BaseIntegrationTest {
         assertThat(result).isNotNull();
         assertThat(result.getContacts()).hasSize(1);
         assertThat(result.getContacts().get(0).getAddress()).isEqualTo("456 Oak Ave");
+        assertMetricIncremented("phonebook.contacts.search");
+        assertTimerMetricRecorded("search_contacts_timer");
     }
 
     @Test
@@ -87,6 +102,8 @@ public class ContactServiceIT extends BaseIntegrationTest {
         assertThat(result).isNotNull();
         assertThat(result.getContacts()).isEmpty();
         assertThat(result.getTotalCount()).isEqualTo(0);
+        assertMetricIncremented("phonebook.contacts.search");
+        assertTimerMetricRecorded("search_contacts_timer");
     }
 
     @Test
@@ -98,6 +115,8 @@ public class ContactServiceIT extends BaseIntegrationTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> searchContacts("query", 0, pageSize));
 
         assertThat(exception.getMessage()).contains("Page size cannot be larger than 10");
+//        assertMetricNotIncremented("phonebook.contacts.search");
+        assertTimerMetricNotRecorded("search_contacts_timer");
     }
 
     @Test
@@ -123,6 +142,8 @@ public class ContactServiceIT extends BaseIntegrationTest {
         // Then
         assertThat(page2).isNotNull();
         assertThat(page2.getContacts()).hasSize(1);
+        assertMetricIncremented("phonebook.contacts.search");
+        assertTimerMetricRecorded("search_contacts_timer");
     }
 
     @Test
@@ -140,9 +161,9 @@ public class ContactServiceIT extends BaseIntegrationTest {
         assertThat(result.getLastName()).isEqualTo("User");
         assertThat(result.getPhone()).isEqualTo("111-222-3333");
         assertThat(result.getAddress()).isEqualTo("999 New St");
-
-        // Verify it's in the database
         assertThat(contactRepository.findById(result.getId())).isPresent();
+        assertMetricIncremented("phonebook.contacts.created");
+        assertTimerMetricRecorded("create_contact_timer");
     }
 
     @Test
@@ -160,12 +181,12 @@ public class ContactServiceIT extends BaseIntegrationTest {
         assertThat(result.getLastName()).isEqualTo("Updated");
         assertThat(result.getPhone()).isEqualTo("999-999-9999");
         assertThat(result.getAddress()).isEqualTo("999 Updated Ave");
-
-        // Verify it's updated in the database
         Contact fromDb = contactRepository.findById(testContactId).orElseThrow();
         assertThat(fromDb.getLastName()).isEqualTo("Updated");
         assertThat(fromDb.getPhone()).isEqualTo("999-999-9999");
         assertThat(fromDb.getAddress()).isEqualTo("999 Updated Ave");
+        assertMetricIncremented("phonebook.contacts.updated");
+        assertTimerMetricRecorded("update_contact_timer");
     }
 
     @Test
@@ -176,6 +197,8 @@ public class ContactServiceIT extends BaseIntegrationTest {
 
         // When + Then
         assertThrows(ContanctNotFoundException.class, () -> contactService.updateContact(nonExistingId, updatedDetails));
+//        assertMetricNotIncremented("phonebook.contacts.updated");
+        assertTimerMetricNotRecorded("update_contact_timer");
     }
 
     @Test
@@ -188,6 +211,8 @@ public class ContactServiceIT extends BaseIntegrationTest {
 
         // Then
         assertThat(contactRepository.existsById(testContactId)).isFalse();
+        assertMetricIncremented("phonebook.contacts.deleted");
+        assertTimerMetricRecorded("delete_contact_timer");
     }
 
     @Test
@@ -197,6 +222,8 @@ public class ContactServiceIT extends BaseIntegrationTest {
 
         // When + Then
         assertThrows(ContanctNotFoundException.class, () -> contactService.deleteContact(nonExistingId));
+//        assertMetricNotIncremented("phonebook.contacts.deleted");
+        assertTimerMetricNotRecorded("delete_contact_timer");
     }
 
     private ContactsResponse searchContacts (String query, int page, int size, String direction, String sortBy) {
@@ -206,4 +233,26 @@ public class ContactServiceIT extends BaseIntegrationTest {
     private ContactsResponse searchContacts (String query, int page, int size) {
         return searchContacts(query, page, size, "ASC", "firstName");
     }
+
+    private void assertMetricIncremented (String metricName) {
+        double count = meterRegistry.get(metricName).counter().count();
+        assertThat(count).isPositive();
+    }
+
+    private void assertTimerMetricRecorded (String timerName) {
+        Timer timer = meterRegistry.get(timerName).timer();
+        assertThat(timer.count()).isPositive();
+    }
+
+//    private void assertMetricNotIncremented (String metricName) {
+//        Counter counter = meterRegistry.get(metricName).counter();
+//        counter.count()
+//        // assertThat(count).isZero();
+//    }
+
+    private void assertTimerMetricNotRecorded (String timerName) {
+        Timer timer = meterRegistry.get(timerName).timer();
+        assertThat(timer.count()).isZero();
+    }
+
 }

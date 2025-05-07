@@ -1,17 +1,17 @@
-package com.personal.phonebook.controller;
+package com.personal.phonebook.exception.controller;
 
 import java.time.LocalDateTime;
 
+import com.personal.phonebook.exception.ContanctNotFoundException;
+import com.personal.phonebook.exception.NotFoundException;
+import com.personal.phonebook.exception.PhonebookException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-import com.personal.phonebook.controller.response.ErrorResponse;
-import com.personal.phonebook.exception.ContanctNotFoundException;
-import com.personal.phonebook.exception.NotFoundException;
-import com.personal.phonebook.exception.PhonebookException;
+import com.personal.phonebook.exception.controller.response.ErrorResponse;
 
 @RestControllerAdvice
 public class RestExceptionHandler {

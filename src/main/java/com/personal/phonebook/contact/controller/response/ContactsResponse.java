@@ -1,8 +1,8 @@
-package com.personal.phonebook.controller.response;
+package com.personal.phonebook.contact.controller.response;
 
 import java.util.List;
 
-import com.personal.phonebook.model.Contact;
+import com.personal.phonebook.contact.model.Contact;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

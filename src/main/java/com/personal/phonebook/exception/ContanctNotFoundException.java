@@ -1,6 +1,6 @@
 package com.personal.phonebook.exception;
 
-import com.personal.phonebook.model.Contact;
+import com.personal.phonebook.contact.model.Contact;
 
 public class ContanctNotFoundException extends NotFoundException {
     public ContanctNotFoundException (String articleId) {

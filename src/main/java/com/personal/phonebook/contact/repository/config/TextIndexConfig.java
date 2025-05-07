@@ -1,4 +1,4 @@
-package com.personal.phonebook.config;
+package com.personal.phonebook.contact.repository.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;

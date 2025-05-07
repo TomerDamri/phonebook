@@ -1,4 +1,4 @@
-package com.personal.phonebook.model;
+package com.personal.phonebook.contact.model;
 
 import java.util.UUID;
 

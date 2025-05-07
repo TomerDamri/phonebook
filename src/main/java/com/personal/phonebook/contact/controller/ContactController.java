@@ -1,13 +1,13 @@
-package com.personal.phonebook.controller;
+package com.personal.phonebook.contact.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.personal.phonebook.controller.response.ContactsResponse;
-import com.personal.phonebook.model.Contact;
-import com.personal.phonebook.service.ContactService;
+import com.personal.phonebook.contact.controller.response.ContactsResponse;
+import com.personal.phonebook.contact.model.Contact;
+import com.personal.phonebook.contact.service.ContactService;
 
 @RestController
 @RequestMapping("/phonebook")

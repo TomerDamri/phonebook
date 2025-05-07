@@ -8,7 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import com.personal.phonebook.BaseIntegrationTest;
-import com.personal.phonebook.model.Contact;
+import com.personal.phonebook.contact.model.Contact;
 
 public class ContactRepositoryIT extends BaseIntegrationTest {
 
