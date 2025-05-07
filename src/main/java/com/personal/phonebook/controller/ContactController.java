@@ -36,7 +36,9 @@ public class ContactController {
     @GetMapping("/contacts")
     public ResponseEntity<ContactsResponse> getContacts (@RequestParam(name = "query", required = false) String query,
                                                          @RequestParam(name = "page", defaultValue = "0") int page,
-                                                         @RequestParam(name = "size", defaultValue = "10") int size) {
-        return ResponseEntity.ok().body(contactService.searchContacts(query, page, size));
+                                                         @RequestParam(name = "size", defaultValue = "10") int size,
+                                                         @RequestParam(name = "direction", defaultValue = "ASC") String direction,
+                                                         @RequestParam(name = "sortBy", defaultValue = "firstName") String sortBy) {
+        return ResponseEntity.ok().body(contactService.searchContacts(query, page, size, direction, sortBy));
     }
 }

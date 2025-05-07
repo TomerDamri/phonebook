@@ -3,6 +3,8 @@ package com.personal.phonebook.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import com.personal.phonebook.BaseIntegrationTest;
@@ -15,7 +17,7 @@ public class ContactServiceIT extends BaseIntegrationTest {
     @Test
     public void searchContacts_WithEmptyQuery_ReturnsAllContacts () {
         // When
-        ContactsResponse result = contactService.searchContacts("", 0, 10);
+        ContactsResponse result = searchContacts("", 0, 10);
 
         // Then
         assertThat(result).isNotNull();
@@ -26,7 +28,7 @@ public class ContactServiceIT extends BaseIntegrationTest {
     @Test
     public void searchContacts_WithNullQuery_ReturnsAllContacts () {
         // When
-        ContactsResponse result = contactService.searchContacts(null, 0, 10);
+        ContactsResponse result = searchContacts(null, 0, 10);
 
         // Then
         assertThat(result).isNotNull();
@@ -37,7 +39,7 @@ public class ContactServiceIT extends BaseIntegrationTest {
     @Test
     public void searchContacts_WithFirstNameQuery_ReturnsMatchingContacts () {
         // When
-        ContactsResponse result = contactService.searchContacts("Alice", 0, 10);
+        ContactsResponse result = searchContacts("Alice", 0, 10);
 
         // Then
         assertThat(result).isNotNull();
@@ -48,7 +50,7 @@ public class ContactServiceIT extends BaseIntegrationTest {
     @Test
     public void searchContacts_WithPartialNameQuery_ReturnsMatchingContacts () {
         // When
-        ContactsResponse result = contactService.searchContacts("Jo", 0, 10);
+        ContactsResponse result = searchContacts("Jo", 0, 10);
 
         // Then
         assertThat(result).isNotNull();
@@ -59,7 +61,7 @@ public class ContactServiceIT extends BaseIntegrationTest {
     @Test
     public void searchContacts_WithPhoneQuery_ReturnsMatchingContacts () {
         // When
-        ContactsResponse result = contactService.searchContacts("123-456", 0, 10);
+        ContactsResponse result = searchContacts("123-456", 0, 10);
 
         // Then
         assertThat(result).isNotNull();
@@ -70,7 +72,7 @@ public class ContactServiceIT extends BaseIntegrationTest {
     @Test
     public void searchContacts_WithAddressQuery_ReturnsMatchingContacts () {
         // When
-        ContactsResponse result = contactService.searchContacts("Oak", 0, 10);
+        ContactsResponse result = searchContacts("Oak", 0, 10);
 
         // Then
         assertThat(result).isNotNull();
@@ -81,7 +83,7 @@ public class ContactServiceIT extends BaseIntegrationTest {
     @Test
     public void searchContacts_WithNoMatches_ReturnsEmptyResults () {
         // When
-        ContactsResponse result = contactService.searchContacts("NonexistentText", 0, 10);
+        ContactsResponse result = searchContacts("NonexistentText", 0, 10);
 
         // Then
         assertThat(result).isNotNull();
@@ -95,8 +97,7 @@ public class ContactServiceIT extends BaseIntegrationTest {
         int pageSize = 100; // Larger than maxPageSize=10
 
         // When + Then
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                                                          () -> contactService.searchContacts("query", 0, pageSize));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> searchContacts("query", 0, pageSize));
 
         assertThat(exception.getMessage()).contains("Page size cannot be larger than 10");
     }
@@ -104,7 +105,7 @@ public class ContactServiceIT extends BaseIntegrationTest {
     @Test
     public void searchContacts_WithPagination_ReturnsPaginatedResults () {
         // When - requesting page 0 with size 2
-        ContactsResponse page0 = contactService.searchContacts(null, 0, 2);
+        ContactsResponse page0 = searchContacts(null, 0, 2);
 
         // Then
         assertThat(page0).isNotNull();
@@ -112,14 +113,14 @@ public class ContactServiceIT extends BaseIntegrationTest {
         assertThat(page0.getTotalCount()).isEqualTo(5);
 
         // When - requesting page 1 with size 2
-        ContactsResponse page1 = contactService.searchContacts(null, 1, 2);
+        ContactsResponse page1 = searchContacts(null, 1, 2);
 
         // Then
         assertThat(page1).isNotNull();
         assertThat(page1.getContacts()).hasSize(2);
 
         // When - requesting page 2 with size 2 (should have only 1 contact)
-        ContactsResponse page2 = contactService.searchContacts(null, 2, 2);
+        ContactsResponse page2 = searchContacts(null, 2, 2);
 
         // Then
         assertThat(page2).isNotNull();
@@ -198,5 +199,13 @@ public class ContactServiceIT extends BaseIntegrationTest {
 
         // When + Then
         assertThrows(ContanctNotFoundException.class, () -> contactService.deleteContact(nonExistingId));
+    }
+
+    private ContactsResponse searchContacts (String query, int page, int size, String direction, String sortBy) {
+        return contactService.searchContacts(query, page, size, direction, sortBy);
+    }
+
+    private ContactsResponse searchContacts (String query, int page, int size) {
+        return searchContacts(query, page, size, "ASC", "firstName");
     }
 }

@@ -48,7 +48,7 @@ class ContactServiceTest {
         // Given
         when(contactRepository.searchContacts(eq("John"), any(PageRequest.class))).thenReturn(contactPage);
         // When
-        ContactsResponse response = contactService.searchContacts("John", 0, 5);
+        ContactsResponse response = contactService.searchContacts("John", 0, 5, "ASC", "firstName");
         // Then
         assertEquals(1, response.getContacts().size());
         assertEquals(1, response.getTotalCount());
@@ -61,7 +61,7 @@ class ContactServiceTest {
         // Given
         when(contactRepository.findAll(any(PageRequest.class))).thenReturn(contactPage);
         // When
-        ContactsResponse response = contactService.searchContacts(null, 0, 5);
+        ContactsResponse response = contactService.searchContacts(null, 0, 5, "ASC", "firstName");
         // Then
         assertEquals(1, response.getContacts().size());
         assertEquals(1, response.getTotalCount());
@@ -72,7 +72,7 @@ class ContactServiceTest {
     void searchContacts_WithInvalidPageSize_ThrowsException () {
         // When + Then
         IllegalArgumentException actualException = assertThrows(IllegalArgumentException.class, () -> {
-            contactService.searchContacts(null, 0, 20);
+            contactService.searchContacts(null, 0, 20, "ASC", "firstName");
         });
         assertTrue(actualException.getMessage().contains("Page size cannot be larger than 10"));
     }

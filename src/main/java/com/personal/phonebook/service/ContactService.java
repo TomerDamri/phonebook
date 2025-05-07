@@ -1,5 +1,7 @@
 package com.personal.phonebook.service;
 
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -19,20 +21,25 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class ContactService {
 
-    private static final String FIRST_NAME = "firstName";
-    private static final Sort SORT = Sort.by(Sort.Direction.ASC, FIRST_NAME);
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("firstName", "lastName", "address");
+
+    private static final Set<String> ALLOWED_SORT_DIRECTION = Set.of("ASC", "DESC");
+
     @Value("${phonebook.pagination.max-page-size}")
     private int maxPageSize;
 
     @Autowired
     private ContactRepository contactRepository;
 
-    public ContactsResponse searchContacts (String query, int page, int size) {
+    public ContactsResponse searchContacts (String query, int page, int size, String direction, String sortBy) {
         validatePageSize(size);
+        validateSortField(sortBy);
+        Sort sort = createSort(direction, sortBy);
+
         if (query == null || query.isEmpty()) {
-            return getContacts(page, size);
+            return getContacts(page, size, sort);
         }
-        Page<Contact> result = contactRepository.searchContacts(query, PageRequest.of(page, size, SORT));
+        Page<Contact> result = contactRepository.searchContacts(query, PageRequest.of(page, size, sort));
         return new ContactsResponse(result.getContent(), result.getTotalElements());
     }
 
@@ -90,8 +97,25 @@ public class ContactService {
         }
     }
 
-    private ContactsResponse getContacts (int page, int size) {
-        Page<Contact> result = contactRepository.findAll(PageRequest.of(page, size, SORT));
+    private Sort createSort (String direction, String sortBy) {
+        Sort.Direction sortDirection;
+        try {
+            sortDirection = Sort.Direction.valueOf(direction.toUpperCase());
+        }
+        catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(String.format("Invalid sort direction '%s'. Allowed values are: ASC, DESC", direction));
+        }
+        return Sort.by(sortDirection, sortBy);
+    }
+
+    private void validateSortField (String sortBy) {
+        if (!ALLOWED_SORT_FIELDS.contains(sortBy)) {
+            throw new IllegalArgumentException("Invalid sort field. Allowed fields are: " + String.join(", ", ALLOWED_SORT_FIELDS));
+        }
+    }
+
+    private ContactsResponse getContacts (int page, int size, Sort sort) {
+        Page<Contact> result = contactRepository.findAll(PageRequest.of(page, size, sort));
         return new ContactsResponse(result.getContent(), result.getTotalElements());
     }
 }

@@ -130,6 +130,49 @@ public class ContactControllerIT extends BaseIntegrationTest {
     }
 
     @Test
+    public void getContacts_WithCustomSorting_ReturnsSortedContacts () {
+        // Given
+        contactRepository.saveAll(List.of(new Contact("Bob", "Smith", "123", "Address"),
+                                          new Contact("Alice", "Johnson", "456", "Address"),
+                                          new Contact("Charlie", "Brown", "789", "Address")));
+
+        // When
+        String urlWithSort = String.format("%s/contacts?direction=%s&sortBy=%s", baseUrl, "DESC", "lastName");
+        ResponseEntity<ContactsResponse> response = restTemplate.getForEntity(urlWithSort, ContactsResponse.class);
+
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        ContactsResponse body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.getContacts()).hasSize(3);
+        assertThat(body.getContacts().get(0).getLastName()).isEqualTo("Smith");
+        assertThat(body.getContacts().get(1).getLastName()).isEqualTo("Johnson");
+        assertThat(body.getContacts().get(2).getLastName()).isEqualTo("Brown");
+    }
+
+    @Test
+    public void getContacts_WithInvalidSortField_ReturnsBadRequest () {
+        // When
+        String urlWithInvalidSort = String.format("%s/contacts?sortBy=%s", baseUrl, "invalidField");
+        ResponseEntity<String> response = restTemplate.getForEntity(urlWithInvalidSort, String.class);
+
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).contains("Invalid sort field. Allowed fields are:");
+    }
+
+    @Test
+    public void getContacts_WithInvalidSortDirection_ReturnsBadRequest () {
+        // When
+        String urlWithInvalidSort = String.format("%s/contacts?direction=%s", baseUrl, "invalidDirection");
+        ResponseEntity<String> response = restTemplate.getForEntity(urlWithInvalidSort, String.class);
+
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).contains("Invalid sort direction 'invalidDirection'. Allowed values are:");
+    }
+
+    @Test
     public void createContact_WithValidData_ReturnsCreatedContact () {
         // Given
         Contact newContact = new Contact("Test", "User", "123-456-7890", "Test Address");
