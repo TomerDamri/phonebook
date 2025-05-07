@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
 import com.personal.phonebook.controller.response.ErrorResponse;
-import com.personal.phonebook.exception.*;
+import com.personal.phonebook.exception.ContanctNotFoundException;
+import com.personal.phonebook.exception.NotFoundException;
+import com.personal.phonebook.exception.PhonebookException;
 
 @RestControllerAdvice
 public class RestExceptionHandler {
@@ -24,7 +26,7 @@ public class RestExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({ ContanctNotFoundException.class})
+    @ExceptionHandler({ ContanctNotFoundException.class })
     public ResponseEntity<ErrorResponse> handleNotFound (NotFoundException ex, WebRequest request) {
         ErrorResponse error = new ErrorResponse(LocalDateTime.now(),
                                                 HttpStatus.NOT_FOUND.value(),
