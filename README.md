@@ -29,7 +29,7 @@ GET /phonebook/contacts?page=0&size=10&query={searchText}&sortBy={field}&directi
 - `query`: Optional search parameter
   - When provided, searches across firstName, lastName, phone, and address fields
   - When omitted, returns all contacts with pagination
-- `sortBy`: Field to sort by (default: "firstName")
+- `sortBy`: Field to sort by, either "firstName", "lastName" or "address" (default: "firstName")
 - `direction`: Sort direction, either "ASC" or "DESC" (default: "ASC")
 
 #### Examples:
@@ -129,7 +129,7 @@ DELETE /phonebook/{id}
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/TomerDamri/phonebook.git
 cd phonebook-api
 ```
 
