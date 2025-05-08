@@ -7,6 +7,7 @@ A simple REST API phonebook service built with Spring Boot and MongoDB.
 - Full CRUD operations for contacts
 - Pagination support (maximum 10 contacts per page)
 - Search functionality across all contact fields
+- Sorting options for contact lists
 - Docker containerization for both the application and database
 - Comprehensive error handling and logging
 
@@ -19,20 +20,22 @@ A simple REST API phonebook service built with Spring Boot and MongoDB.
 
 ## API Documentation
 
-### Get Contacts (with pagination and search)
+### Get Contacts (with pagination, search, and sorting)
 ```
-GET /api/contacts?page=0&size=10&query={searchText}
+GET /phonebook/contacts?page=0&size=10&query={searchText}&sortBy={field}&direction={ASC|DESC}
 ```
 - `page`: Page number (starts from 0)
 - `size`: Number of contacts per page (configurable via `phonebook.pagination.max-page-size`, default max is 10)
 - `query`: Optional search parameter
-    - When provided, searches across firstName, lastName, phone, and address fields
-    - When omitted, returns all contacts with pagination
+  - When provided, searches across firstName, lastName, phone, and address fields
+  - When omitted, returns all contacts with pagination
+- `sortBy`: Field to sort by (default: "firstName")
+- `direction`: Sort direction, either "ASC" or "DESC" (default: "ASC")
 
 #### Examples:
-Get first page of all contacts (10 per page):
+Get first page of all contacts (10 per page), sorted by firstName ascending:
 ```
-GET /api/contacts?page=0&size=10
+GET /phonebook/contacts?page=0&size=10
 ```
 #### Response format:
 The response shows 10 contacts from a total of 15 contacts in the system, sorted by firstName in ascending order
@@ -57,12 +60,12 @@ The response shows 10 contacts from a total of 15 contacts in the system, sorted
 }
 ```
 
-Search contacts containing "john" (paginated):
+Search contacts containing "john" and sort by lastName in descending order:
 ```
-GET /api/contacts?page=0&size=10&query=john
+GET /phonebook/contacts?page=0&size=10&query=john&sortBy=lastName&direction=DESC
 ```
 #### Response format:
-The response shows 10 contacts from a total of 42 contacts in the system, sorted by firstName in ascending
+The response shows contacts matching "john", sorted by lastName in descending order
 ```json
 {
   "contacts": [
@@ -86,7 +89,7 @@ The response shows 10 contacts from a total of 42 contacts in the system, sorted
 
 ### Create Contact
 ```
-POST /api/contacts
+POST /phonebook
 ```
 Request body:
 ```json
@@ -100,7 +103,7 @@ Request body:
 
 ### Update Contact
 ```
-PUT /api/contacts/{id}
+PUT /phonebook/{id}
 ```
 Request body:
 ```json
@@ -108,13 +111,13 @@ Request body:
   "firstName": "John",        // mandatory
   "lastName": "Doe",         // optional
   "phone": "123-456-7890",  // mandatory
-  "address": "updated adress"   // optional
+  "address": "updated address"   // optional
 }
 ```
 
 ### Delete Contact
 ```
-DELETE /api/contacts/{id}
+DELETE /phonebook/{id}
 ```
 
 ## Running the Application
@@ -137,12 +140,12 @@ mvn clean package
 
 3. Start the application with Docker Compose:
 ```bash
-docker-compose up -build
+docker-compose up --build
 ```
 
 4. The API will be available at:
 ```
-http://localhost:8080/api/contacts
+http://localhost:8080/phonebook
 ```
 
 ## Testing
